@@ -1,0 +1,6 @@
+@BE_PeerLending_HostAddress = http://localhost:5082
+
+GET {{BE_PeerLending_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
