@@ -1,5 +1,6 @@
 ﻿using DAL.DTO.Req;
-using DAL.DTO.Res;
+using DAL.DTO.Res.Funding;
+using DAL.DTO.Res.Loan;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,5 +16,9 @@ namespace DAL.Repositories.Services.Interfaces
         Task<string> UpdateStatusLoan(ReqLoanStatusDto loan , string id);
 
         Task<List<ResListLoanDto>> LoanList(string status);
+
+        Task<ResListLoanDto> GetLoanById(string id);
+
+
     }
 }

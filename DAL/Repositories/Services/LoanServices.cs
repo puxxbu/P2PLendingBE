@@ -1,5 +1,6 @@
 ﻿using DAL.DTO.Req;
-using DAL.DTO.Res;
+using DAL.DTO.Res.Funding;
+using DAL.DTO.Res.Loan;
 using DAL.Models;
 using DAL.Repositories.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -38,26 +39,54 @@ namespace DAL.Repositories.Services
             return newLoan.BorrowerId;
         }
 
+        public async Task<ResListLoanDto> GetLoanById(string id)
+        {
+            var loan = await _peerlendingContext.MstLoans.
+                Include(l => l.User).
+                Select(x => new ResListLoanDto
+                {
+                    LoanId = x.Id,
+                    BorrowerName = x.User.Name,
+                    Amount = x.Amount,
+                    InterestRate = x.InterestRate,
+                    Duration = x.Duration,
+                    Status = x.Status,
+                    CreatedAt = x.CreatedAt,
+                    UpdatedAt = x.UpdatedAt
+                }).FirstOrDefaultAsync(x => x.LoanId == id);
+
+            var interestRate = (double)loan.InterestRate / 100;
+
+            var returnAmount = interestRate * (double)loan.Amount / (1 - Math.Pow((1 + interestRate), (-12)));
+
+            double amount = (double)loan.Amount;
+
+            loan.ReturnAmount = (decimal?)Math.Round(returnAmount + amount, 2);
+            loan.ReturnInterest = Math.Round((decimal)(loan.ReturnAmount - loan.Amount), 2);
+
+            return loan;
+        }
+
         public async Task<List<ResListLoanDto>> LoanList(string status)
         {
-           
+
             var loans = await _peerlendingContext.MstLoans.
                 Include(l => l.User).
                 Select(x => new ResListLoanDto
-            {
-                LoanId = x.Id,
-                BorrowerName = x.User.Name,
-                Amount = x.Amount,
-                InterestRate = x.InterestRate,
-                Duration = x.Duration,
-                Status = x.Status,
-                CreatedAt = x.CreatedAt,
-                UpdatedAt = x.UpdatedAt
-            }).OrderBy(x => x.CreatedAt)
+                {
+                    LoanId = x.Id,
+                    BorrowerName = x.User.Name,
+                    Amount = x.Amount,
+                    InterestRate = x.InterestRate,
+                    Duration = x.Duration,
+                    Status = x.Status,
+                    CreatedAt = x.CreatedAt,
+                    UpdatedAt = x.UpdatedAt
+                }).OrderBy(x => x.CreatedAt)
             .Where(x => string.IsNullOrEmpty(status) || x.Status == status)
             .ToListAsync();
 
-        
+
             return loans;
 
 
@@ -81,5 +110,9 @@ namespace DAL.Repositories.Services
             return id;
 
         }
+
+        // Lender & Borrowers
+
+        
     }
 }

@@ -4,11 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DAL.DTO.Res
+namespace DAL.DTO.Req.Loan
 {
-    public class ResLoginDto
+    internal class ReqLoanDto
     {
-        public string Token { get; set; }
-        public string Role { get; set; }
     }
 }

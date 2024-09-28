@@ -4,11 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DAL.DTO.Res
+namespace DAL.DTO.Req.Funding
 {
-    public class ResLoginDto
+    public class ReqFundingDto
     {
-        public string Token { get; set; }
-        public string Role { get; set; }
+        public string LoanId { get; set; }
     }
 }

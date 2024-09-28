@@ -179,7 +179,8 @@ namespace BE_PeerLending.Controllers
         {
             try
             {
-                var userRole = HttpContext.User.FindFirstValue(ClaimTypes.Role);
+                var userRole = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.UserData)?.Value;
+                var role = User?.IsInRole("admin");
 
                 if (userRole != "admin")
                 {
@@ -212,6 +213,73 @@ namespace BE_PeerLending.Controllers
                     Data = null,
                 });
             }
+        }
+
+
+        [HttpPut("user/balance")]
+        [Authorize(Roles = "lender")]
+        public async Task<IActionResult> AddBalance(ReqUpdateBalanceDto reqUpdate)
+        {
+            try
+            {
+                var id = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.UserData)?.Value;
+
+
+                var res = await _userservices.UpdateBalance(reqUpdate, id);
+                return Ok(new ResBaseDto<object>
+                {
+                    Success = true,
+                    Message = "Balance Added! ",
+                    Data = res,
+                });
+
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new ResBaseDto<string>
+                {
+                    Success = false,
+                    Message = ex.Message,
+                    Data = null,
+                });
+            }
+        }
+
+        [HttpGet("user")]
+        public async Task<IActionResult> GetUserData()
+        {
+            try
+            {
+                var id = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.UserData)?.Value;
+                var response = await _userservices.GetById(id);
+                return Ok(new ResBaseDto<object>
+                {
+                    Success = true,
+                    Message = "User found",
+                    Data = response
+                });
+            }
+            catch (Exception ex)
+            {
+                if (ex.Message == "User not found")
+                {
+                    return BadRequest(new ResBaseDto<string>
+                    {
+                        Success = false,
+                        Message = ex.Message,
+                        Data = null
+                    });
+                }
+
+                return StatusCode(StatusCodes.Status500InternalServerError, new ResBaseDto<string>
+                {
+                    Success = false,
+                    Message = ex.Message,
+                    Data = null
+                });
+
+            }
+
         }
 
 

@@ -81,8 +81,11 @@ builder.Services.AddSwaggerGen(c =>
 builder.Services.AddDbContext<PeerlendingContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+builder.Services.AddHttpContextAccessor();
+
 builder.Services.AddScoped<IUserServices, UserServices>();
 builder.Services.AddScoped<ILoanServices, LoanServices>();
+builder.Services.AddScoped<IFundingServices, FundingServices>();
 
 var app = builder.Build();
 

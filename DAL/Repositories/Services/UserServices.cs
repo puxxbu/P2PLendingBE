@@ -63,6 +63,7 @@ namespace DAL.Repositories.Services
             var loginResponse = new ResLoginDto
             {
                 Token = token,
+                Role = user.Role
             };
 
             return loginResponse;
@@ -84,6 +85,7 @@ namespace DAL.Repositories.Services
                 new Claim(JwtRegisteredClaimNames.Sub, user.Email),
                 new Claim(ClaimTypes.Name, user.Name),
                 new Claim(ClaimTypes.Role, user.Role),
+                new Claim(ClaimTypes.UserData, user.Id),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
             };
 
@@ -207,6 +209,34 @@ namespace DAL.Repositories.Services
 
             return resUser;
             //throw new NotImplementedException();
+        }
+
+        public async Task<ResUpdateDto> UpdateBalance(ReqUpdateBalanceDto reqUpdate, string id)
+        {
+            var user = _context.MstUsers.SingleOrDefault(x => x.Id == id);
+            if (user == null)
+            {
+                throw new Exception("User not found!");
+            }
+
+            if (reqUpdate.Balance < 0)
+            {
+                throw new Exception("Balance cannot be negative");
+            }
+
+            user.Balance += reqUpdate.Balance;
+
+            var newUser = _context.MstUsers.Update(user).Entity;
+            _context.SaveChanges();
+
+            var updateRes = new ResUpdateDto
+            {
+                nama = newUser.Name,
+
+            };
+
+            return updateRes;
+
         }
     }
 }

@@ -1,13 +1,14 @@
 ﻿using DAL.DTO.Req;
 using DAL.DTO.Res;
 using DAL.Repositories.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Text;
 
 namespace BE_PeerLending.Controllers
 {
-    [Route("rest/v1/loan/[controller]")]
+    [Route("rest/v1/loan/")]
     [ApiController]
     public class LoanController : ControllerBase
     {
@@ -20,6 +21,7 @@ namespace BE_PeerLending.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "admin,borrower")]
         public async Task<IActionResult> NewLoan(ReqLoanDto loan)
         {
             try
@@ -64,8 +66,8 @@ namespace BE_PeerLending.Controllers
             }
         }
 
-        [HttpPut]
-        public async Task<IActionResult> UpdateStatusLoan([FromQuery] string id, ReqLoanStatusDto loan)
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateStatusLoan(string id, ReqLoanStatusDto loan)
         {
             try
             {
@@ -109,7 +111,8 @@ namespace BE_PeerLending.Controllers
             }
         }
 
-        [HttpGet]
+        [HttpGet("loans")]
+        [Authorize(Roles = "admin,lender,borrower")]
         public async Task<IActionResult> LoanList([FromQuery] string status)
         {
             try
@@ -120,6 +123,33 @@ namespace BE_PeerLending.Controllers
                 {
                     Success = true,
                     Message = "Success get all loan data",
+                    Data = res
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new ResBaseDto<object>
+                {
+                    Success = false,
+                    Message = ex.Message,
+                    Data = null
+                });
+            }
+        }
+
+
+        [HttpGet("{id}")]
+        [Authorize(Roles = "admin,lender,borrower")]
+        public async Task<IActionResult> GetLoanById(string id)
+        {
+            try
+            {
+                var res = await _loanServices.GetLoanById(id);
+
+                return Ok(new ResBaseDto<object>
+                {
+                    Success = true,
+                    Message = "Success loan data",
                     Data = res
                 });
             }
