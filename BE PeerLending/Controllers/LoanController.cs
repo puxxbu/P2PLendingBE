@@ -4,6 +4,7 @@ using DAL.Repositories.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 using System.Text;
 
 namespace BE_PeerLending.Controllers
@@ -46,7 +47,13 @@ namespace BE_PeerLending.Controllers
                     });
                 }
 
-                var res = await _loanServices.CreateLoan(loan);
+                if(loan.BorrowerId == null)
+                {
+                    var borrowerId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.UserData)?.Value;
+                    loan.BorrowerId = borrowerId;
+                }
+
+                var res = await _loanServices.CreateLoan(loan, loan.BorrowerId);
 
                 return Ok(new ResBaseDto<string>
                 {

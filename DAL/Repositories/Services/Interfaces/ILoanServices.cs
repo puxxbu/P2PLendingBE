@@ -11,7 +11,7 @@ namespace DAL.Repositories.Services.Interfaces
 {
     public interface ILoanServices
     {
-        Task<string> CreateLoan(ReqLoanDto loan);
+        Task<string> CreateLoan(ReqLoanDto loan, string borrowerId);
 
         Task<string> UpdateStatusLoan(ReqLoanStatusDto loan , string id);
 

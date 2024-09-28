@@ -21,14 +21,21 @@ namespace DAL.Repositories.Services
         {
             _peerlendingContext = peerlendingContext;
         }
-        public async Task<string> CreateLoan(ReqLoanDto loan)
+        public async Task<string> CreateLoan(ReqLoanDto loan, string borrowerId)
         {
+           var borrower = _peerlendingContext.MstUsers.FirstOrDefault(x => x.Id == borrowerId);
+
+            if (borrower == null)
+            {
+                throw new Exception("Borrower id not found!");
+            }
+
             var newLoan = new MstLoans
             {
-                BorrowerId = loan.BorrowerId,
+                BorrowerId = borrowerId,
                 Amount = loan.Amount,
                 InterestRate = loan.InterestRate,
-                Duration = loan.Duration,
+                Duration = 12,
 
             };
 
