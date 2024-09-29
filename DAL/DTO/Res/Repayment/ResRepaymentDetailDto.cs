@@ -23,6 +23,10 @@ namespace DAL.DTO.Res.Repayment
 
         public decimal? ReturnInterest { get; set; }
 
+        public decimal? LoanRatio{ get; set; }
+
+        public string? LastPaymentStatus { get; set; }
+
 
         public ResPayScheduleDto[] PaySchedules { get; set; }
 

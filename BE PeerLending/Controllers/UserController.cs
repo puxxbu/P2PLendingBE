@@ -184,7 +184,7 @@ namespace BE_PeerLending.Controllers
 
                 if (userRole != "admin")
                 {
-                    var res = await _userservices.UpdateUser(reqUpdate.Name, id);
+                    var res = await _userservices.UpdateUserbyAdmin(reqUpdate, id);
                     return Ok(new ResBaseDto<object>
                     {
                         Success = true,

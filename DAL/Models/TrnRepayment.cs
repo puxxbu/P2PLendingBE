@@ -48,5 +48,10 @@ namespace DAL.Models
         public DateTime PaidAt { get; set; }
 
         public MstLoans Loan { get; set; }
+
+        public static explicit operator decimal(TrnRepayment v)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

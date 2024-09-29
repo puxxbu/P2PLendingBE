@@ -55,6 +55,22 @@ namespace DAL.Repositories.Services
             decimal totalRepaidAmount = 0;
             var repaymentAmount = (decimal)(returnAmount / 12);
 
+            var lastMinBalanceAmount = await _peerlendingContext.TrnRepayment
+                .Where(r => r.LoanId == req.LoanId)
+                .OrderBy(r => r.BalanceAmount)
+                .FirstOrDefaultAsync();
+
+            var balanceAmount = 0.0;
+
+            if (lastMinBalanceAmount != null)
+            {
+                balanceAmount = (double)lastMinBalanceAmount.BalanceAmount;
+            }
+            else
+            {
+                balanceAmount = returnAmount;
+            }
+
 
             foreach (var repaidAt in repaymentDates)
             {
@@ -74,7 +90,7 @@ namespace DAL.Repositories.Services
                     LoanId = req.LoanId,
                     Amount = (decimal)returnAmount,
                     RepaidAmount = repaymentAmount,
-                    BalanceAmount = (decimal)returnAmount - repaymentAmount - totalRepaidAmount, 
+                    BalanceAmount = (decimal)balanceAmount - repaymentAmount - totalRepaidAmount, 
                     PaidAt = repaidAt
                 };
 
@@ -82,7 +98,9 @@ namespace DAL.Repositories.Services
                 {
                     repayment.RepaidStatus = "done";
                     lender.Balance += (decimal)returnAmount;
-
+                    loan.Status = "repaid";
+                    loan.UpdatedAt = DateTime.UtcNow;
+                    _peerlendingContext.MstLoans.Update(loan);
                     _peerlendingContext.MstUsers.Update(lender);
                 }
                 else
@@ -107,11 +125,7 @@ namespace DAL.Repositories.Services
             }
 
 
-            if (totalRepaidAmount >= funding.Amount)
-            {
-                loan.Status = "repaid";
-                await _peerlendingContext.SaveChangesAsync();
-            }
+           
 
             return "Loan repayment successful";
         }
@@ -160,6 +174,9 @@ namespace DAL.Repositories.Services
                 throw new Exception("Funding not found!");
             }
 
+           
+
+
             var repaymentSchedule = new List<ResPayScheduleDto>();
             var startDate = funding.FundedAt;
 
@@ -195,8 +212,26 @@ namespace DAL.Repositories.Services
 
             double amount = (double)loan.Amount;
 
+            var lastPayment = await _peerlendingContext.TrnRepayment
+              .Where(r => r.LoanId == loanId)
+              .OrderBy(r => r.BalanceAmount)
+              .FirstOrDefaultAsync();
+
+
             loan.ReturnAmount = (decimal?)Math.Round(returnAmount + amount, 2);
             loan.ReturnInterest = Math.Round((decimal)(loan.ReturnAmount - loan.Amount), 2);
+
+            var loanRatio = (double)loan.ReturnAmount / 12;
+
+            loan.LoanRatio = (decimal)loanRatio;
+
+            if (lastPayment != null)
+            {
+                loan.ReturnAmount = lastPayment.BalanceAmount;
+                loan.LastPaymentStatus = lastPayment?.RepaidStatus;
+
+            }
+
 
             loan.PaySchedules = repaymentSchedule.ToArray();
 
