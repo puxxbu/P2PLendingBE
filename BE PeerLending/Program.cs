@@ -86,6 +86,7 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IUserServices, UserServices>();
 builder.Services.AddScoped<ILoanServices, LoanServices>();
 builder.Services.AddScoped<IFundingServices, FundingServices>();
+builder.Services.AddScoped<IRepaymentServices, RepaymentServices>();
 
 var app = builder.Build();
 

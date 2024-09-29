@@ -19,6 +19,7 @@ namespace DAL.Repositories.Services.Interfaces
 
         Task<ResListLoanDto> GetLoanById(string id);
 
+        Task<List<ResListLoanDto>> BorrowerLoanList(string status, string id);
 
     }
 }

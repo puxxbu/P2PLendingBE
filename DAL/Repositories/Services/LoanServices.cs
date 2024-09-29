@@ -21,6 +21,33 @@ namespace DAL.Repositories.Services
         {
             _peerlendingContext = peerlendingContext;
         }
+
+        public async Task<List<ResListLoanDto>> BorrowerLoanList(string status, string id)
+        {
+            var borrower = _peerlendingContext.MstUsers.FirstOrDefault(x => x.Id == id);
+            if (borrower == null) {
+                throw new Exception("Borrower id not found!");
+            }
+
+            var loans = await _peerlendingContext.MstLoans.
+                Include(l => l.User).
+                Select(x => new ResListLoanDto
+                {
+                    LoanId = x.Id,
+                    BorrowerName = x.User.Name,
+                    Amount = x.Amount,
+                    InterestRate = x.InterestRate,
+                    Duration = x.Duration,
+                    Status = x.Status,
+                    CreatedAt = x.CreatedAt,
+                    UpdatedAt = x.UpdatedAt
+                }).OrderBy(x => x.CreatedAt)
+                .Where(x => x.BorrowerName == borrower.Name && (string.IsNullOrEmpty(status) || x.Status == status))
+                .ToListAsync();
+
+            return loans;
+        }
+
         public async Task<string> CreateLoan(ReqLoanDto loan, string borrowerId)
         {
            var borrower = _peerlendingContext.MstUsers.FirstOrDefault(x => x.Id == borrowerId);
@@ -28,6 +55,16 @@ namespace DAL.Repositories.Services
             if (borrower == null)
             {
                 throw new Exception("Borrower id not found!");
+            }
+
+            if(loan.InterestRate < 0 || loan.InterestRate > 100)
+            {
+                throw new Exception("Interest rate must be between 0 and 100!");
+            }
+
+            if(loan.InterestRate == null)
+            {
+                loan.InterestRate = (decimal)2.5;
             }
 
             var newLoan = new MstLoans

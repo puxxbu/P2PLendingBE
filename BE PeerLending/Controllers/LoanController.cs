@@ -170,5 +170,32 @@ namespace BE_PeerLending.Controllers
                 });
             }
         }
+
+        [HttpGet("borrower-loan")]
+        [Authorize(Roles = "admin,borrower")]
+        public async Task<IActionResult> BorrowerLoanList([FromQuery] string status)
+        {
+            try
+            {
+                var borrowerId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.UserData)?.Value;
+                var res = await _loanServices.BorrowerLoanList(status, borrowerId);
+
+                return Ok(new ResBaseDto<object>
+                {
+                    Success = true,
+                    Message = "Success get all loan data",
+                    Data = res
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new ResBaseDto<object>
+                {
+                    Success = false,
+                    Message = ex.Message,
+                    Data = null
+                });
+            }
+        }
     }
 }
